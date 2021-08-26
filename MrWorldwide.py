@@ -50,13 +50,14 @@ responseJSON = []
 for item in sourceFileValues:
 	# Set query data
 	data = {
-		'q': str(item),
+		'q': '"' + item + '"',
 		'source': args.sourceLang,
 		'target': args.targetLang
 	}
 	# Send the query and get the response
-	response = requests.post('https://translate.argosopentech.com/translate', headers=headers, data=data)
-	responseJSON.append(json.loads(response.content.decode(response.encoding))["translatedText"])
+	response = requests.post('https://translate.astian.org/translate', headers=headers, data=data)
+	responseData = json.loads(response.content.decode(response.encoding))["translatedText"]
+	responseJSON.append(str(responseData).rstrip('"').replace('\u00ab', '').lstrip('"').replace('\u00bb', ''))
 
 print("Query time was " + str(time.time() - startQueryTime) + " seconds.")
 
