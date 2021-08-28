@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="logo" lang="logo">
+    <file>gui_resources/MrWorldwide.png</file>
+  </qresource>
+</RCC>
