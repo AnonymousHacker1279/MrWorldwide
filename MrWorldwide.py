@@ -194,10 +194,25 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 		if canProceed:
 			self.logAction("Beginning translations with a source language of " + self.sourceLangBox.currentText() + " and a target language of " + self.targetLangBox.currentText())
 			self.logAction("Using LibreTranslate mirror: " + self.config["general"]["libretranslate_mirror"])
+			self.disableButtonsDuringTranslations()
 			self.threadpool = QtCore.QThreadPool()
 			self.worker = Worker(self.startTranslations)
 			self.worker.signals.callback.connect(self.threadCallbackHandler)
 			self.threadpool.start(self.worker)
+
+	def disableButtonsDuringTranslations(self):
+		self.startButton.setDisabled(True)
+		self.openFileButton.setDisabled(True)
+		self.targetLocationButton.setDisabled(True)
+		self.closeButton.setDisabled(True)
+		self.configButton.setDisabled(True)
+
+	def enableButtonsAfterTranslations(self):
+		self.startButton.setDisabled(False)
+		self.openFileButton.setDisabled(False)
+		self.targetLocationButton.setDisabled(False)
+		self.closeButton.setDisabled(False)
+		self.configButton.setDisabled(False)
 
 	def threadCallbackHandler(self, callback):
 		try:
@@ -273,6 +288,7 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 				progBarVal = int(((currentIteration / self.totalLangFileLines) * 100).__round__(0))
 				self.progressBar.setValue(progBarVal)
 			json.dump(compiledDict, f, separators=(',', ': '), indent="	", ensure_ascii=False)
+		self.enableButtonsAfterTranslations()
 		self.logAction("Translations written to file.")
 		self.progressBarLabel.setText("All tasks completed.")
 
