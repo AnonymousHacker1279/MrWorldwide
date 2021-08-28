@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QFileDialog
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
-import sys, time, json, requests, traceback
-import MrWorldwideUI
+import sys, time, json, requests, traceback, configparser
+import MrWorldwideUI, ConfigurationUI
 
 class LangTypes:
 	ENGLISH = "English"
@@ -52,6 +52,25 @@ class Worker(QtCore.QRunnable):
 			print(traceback.print_exc())
 		else:
 			self.signals.callback.emit(result)
+
+def readConfigurationFile(config):
+	try:
+		configFile = open("config.ini")
+		configFile.close()
+		return config.read("config.ini")
+	except:
+		config['general'] = {}
+		config['general']['libretranslate_mirror'] = 'https://translate.astian.org/translate'
+
+		config['defaults'] = {}
+		config['defaults']['default_source_language'] = LangTypes.ENGLISH
+		config['defaults']['default_target_language'] = LangTypes.SPANISH
+
+		with open('config.ini', 'w') as configFile:
+			config.write(configFile)
+			configFile.close()
+			return config
+
 class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 
 	selectedFile = ""
@@ -71,17 +90,40 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 		self.setWindowIcon(icon) # TODO: Custom icon
 		self.logo.setPixmap(logo)
 
+		self.config = configparser.ConfigParser()
+	
+		readConfigurationFile(self.config)
+
 		# Setup button actions
 		self.closeButton.clicked.connect(self.closeEvent)
 		self.abortButton.clicked.connect(self.abortEvent)
 		self.startButton.clicked.connect(self.preTranslate)
 		self.openFileButton.clicked.connect(self.openFileEvent)
 		self.targetLocationButton.clicked.connect(self.selectFileLocationEvent)
+		self.configButton.clicked.connect(self.openConfiguration)
 
 		# Setup dropdown boxes
 		self.sourceLangBox.addItems([LangTypes.ENGLISH, LangTypes.ARABIC, LangTypes.CHINESE, LangTypes.DUTCH, LangTypes.FRENCH, LangTypes.GERMAN, LangTypes.HINDI, LangTypes.INDONESIAN, LangTypes.IRISH, LangTypes.ITALIAN, LangTypes.JAPANESE, LangTypes.KOREAN, LangTypes.POLISH, LangTypes.PORTUGUESE, LangTypes.RUSSIAN, LangTypes.SPANISH, LangTypes.TURKISH, LangTypes.UKRANIAN, LangTypes.VIETNAMESE])
 		self.targetLangBox.addItems([LangTypes.ENGLISH, LangTypes.ARABIC, LangTypes.CHINESE, LangTypes.DUTCH, LangTypes.FRENCH, LangTypes.GERMAN, LangTypes.HINDI, LangTypes.INDONESIAN, LangTypes.IRISH, LangTypes.ITALIAN, LangTypes.JAPANESE, LangTypes.KOREAN, LangTypes.POLISH, LangTypes.PORTUGUESE, LangTypes.RUSSIAN, LangTypes.SPANISH, LangTypes.TURKISH, LangTypes.UKRANIAN, LangTypes.VIETNAMESE])
 	
+		self.sourceLangBox.setCurrentText(self.config["defaults"]["default_source_language"])
+		self.targetLangBox.setCurrentText(self.config["defaults"]["default_target_language"])
+
+		self.apiMirror = self.config["general"]["libretranslate_mirror"]
+
+	# Open the configuration GUI
+	def openConfiguration(self, event):
+		self.configurationDialog = ConfigurationDialog()
+		self.configurationDialog.setup(self)
+		self.configurationDialog.show()
+
+	# Refresh the configuration
+	def refreshConfiguration(self):
+		readConfigurationFile(self.config)
+		self.sourceLangBox.setCurrentText(self.config["defaults"]["default_source_language"])
+		self.targetLangBox.setCurrentText(self.config["defaults"]["default_target_language"])
+		self.apiMirror = self.config["general"]["libretranslate_mirror"]
+
 	# Close event, for handling closing of the program
 	def closeEvent(self, event):
 		global app
@@ -151,6 +193,7 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 			canProceed = False
 		if canProceed:
 			self.logAction("Beginning translations with a source language of " + self.sourceLangBox.currentText() + " and a target language of " + self.targetLangBox.currentText())
+			self.logAction("Using LibreTranslate mirror: " + self.config["general"]["libretranslate_mirror"])
 			self.threadpool = QtCore.QThreadPool()
 			self.worker = Worker(self.startTranslations)
 			self.worker.signals.callback.connect(self.threadCallbackHandler)
@@ -180,6 +223,13 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 		responseJSON = []
 		progressCallback.emit('self.progressBarLabel.setText("Translating...")')
 		itemLoopIteration = 1
+		try:
+			requests.post(self.config["general"]["libretranslate_mirror"], headers=headers, data=None)
+			hasFailedResolve = False
+		except:
+			requests.post('https://translate.astian.org/translate', headers=headers, data=None)
+			progressCallback.emit('self.logAction("Failed to resolve LibreTranslate mirror. Defaulting to https://translate.astian.org/translate")')
+			hasFailedResolve = True
 		for item in self.sourceFileValues:
 			if self.shouldAbort:
 				return
@@ -192,7 +242,10 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 				'target': self.getLangIdentifier(self.targetLangBox.currentText())
 			}
 			# Send the query and get the response
-			response = requests.post('https://translate.astian.org/translate', headers=headers, data=data)
+			if hasFailedResolve == True:
+				response = requests.post('https://translate.astian.org/translate', headers=headers, data=data)
+			else:
+				response = requests.post(self.config["general"]["libretranslate_mirror"], headers=headers, data=data)
 			responseData = json.loads(response.content.decode(response.encoding))["translatedText"]
 			responseJSON.append(str(responseData).rstrip('"').replace('\u00ab', '').lstrip('"').replace('\u00bb', ''))
 			itemLoopIteration = itemLoopIteration + 1
@@ -280,6 +333,62 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 		self.setupUi(self)
 		self.run()
 
+
+class ConfigurationDialog(QWidget, ConfigurationUI.Ui_Dialog):
+	def __init__(self, parent=None):
+		super(ConfigurationDialog, self).__init__(parent)
+		self.setupUi(self)
+		self.run()
+	
+	def run(self):
+		# Setup resources
+		QtCore.QDir.addSearchPath('images', 'gui_resources/')
+		logo = QtGui.QPixmap('images:Configuration.png')
+		icon = QtGui.QIcon('images:Configuration.png')
+
+		# Set the logos and images
+		self.setWindowIcon(icon) # TODO: Custom icon
+		self.logo.setPixmap(logo)
+
+		# Read configuration
+		self.config = configparser.ConfigParser()
+		readConfigurationFile(self.config)
+		# Setup dropdown boxes
+		self.defaultSourceLangBox.addItems([LangTypes.ENGLISH, LangTypes.ARABIC, LangTypes.CHINESE, LangTypes.DUTCH, LangTypes.FRENCH, LangTypes.GERMAN, LangTypes.HINDI, LangTypes.INDONESIAN, LangTypes.IRISH, LangTypes.ITALIAN, LangTypes.JAPANESE, LangTypes.KOREAN, LangTypes.POLISH, LangTypes.PORTUGUESE, LangTypes.RUSSIAN, LangTypes.SPANISH, LangTypes.TURKISH, LangTypes.UKRANIAN, LangTypes.VIETNAMESE])
+		self.defaultTargetLangBox.addItems([LangTypes.ENGLISH, LangTypes.ARABIC, LangTypes.CHINESE, LangTypes.DUTCH, LangTypes.FRENCH, LangTypes.GERMAN, LangTypes.HINDI, LangTypes.INDONESIAN, LangTypes.IRISH, LangTypes.ITALIAN, LangTypes.JAPANESE, LangTypes.KOREAN, LangTypes.POLISH, LangTypes.PORTUGUESE, LangTypes.RUSSIAN, LangTypes.SPANISH, LangTypes.TURKISH, LangTypes.UKRANIAN, LangTypes.VIETNAMESE])
+
+		# Apply current configuration
+		self.apiMirror.setText(self.config["general"]["libretranslate_mirror"])
+		self.defaultSourceLangBox.setCurrentText(self.config["defaults"]["default_source_language"])
+		self.defaultTargetLangBox.setCurrentText(self.config["defaults"]["default_target_language"])
+
+		# Setup button actions
+		self.closeButton.clicked.connect(self.closeEvent)
+		self.applyButton.clicked.connect(self.applyEvent)
+
+	# Setup variables
+	def setup(self, parent):
+		self.parent = parent
+
+	# Close event, for handling closing of the program
+	def closeEvent(self, event):
+		self.close()
+
+	# Close event, for handling closing of the program
+	def applyEvent(self, event):
+		self.config = configparser.ConfigParser()
+		self.config['general'] = {}
+		self.config['general']['libretranslate_mirror'] = self.apiMirror.text()
+
+		self.config['defaults'] = {}
+		self.config['defaults']['default_source_language'] = self.defaultSourceLangBox.currentText()
+		self.config['defaults']['default_target_language'] = self.defaultTargetLangBox.currentText()
+
+		with open('config.ini', 'w') as configFile:
+			self.config.write(configFile)
+			configFile.close()
+		self.parent.refreshConfiguration()
+		self.close()
 
 def main():
 	global app

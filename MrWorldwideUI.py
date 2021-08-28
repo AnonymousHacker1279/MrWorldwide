@@ -44,7 +44,7 @@ class Ui_Dialog(object):
         self.sourceLangBox.setGeometry(QtCore.QRect(340, 10, 91, 22))
         self.sourceLangBox.setEditable(True)
         self.sourceLangBox.setCurrentText("")
-        self.sourceLangBox.setMaxVisibleItems(5)
+        self.sourceLangBox.setMaxVisibleItems(10)
         self.sourceLangBox.setObjectName("sourceLangBox")
         self.sourceLangSelectLabel = QtWidgets.QLabel(Dialog)
         self.sourceLangSelectLabel.setGeometry(QtCore.QRect(240, 10, 91, 21))
@@ -56,7 +56,7 @@ class Ui_Dialog(object):
         self.targetLangBox.setGeometry(QtCore.QRect(340, 40, 91, 22))
         self.targetLangBox.setEditable(True)
         self.targetLangBox.setCurrentText("")
-        self.targetLangBox.setMaxVisibleItems(5)
+        self.targetLangBox.setMaxVisibleItems(10)
         self.targetLangBox.setObjectName("targetLangBox")
         self.langFileEntryCounterLabel = QtWidgets.QLabel(Dialog)
         self.langFileEntryCounterLabel.setGeometry(QtCore.QRect(230, 300, 141, 21))
@@ -153,6 +153,9 @@ class Ui_Dialog(object):
         self.targetLocationButton = QtWidgets.QPushButton(Dialog)
         self.targetLocationButton.setGeometry(QtCore.QRect(490, 80, 111, 23))
         self.targetLocationButton.setObjectName("targetLocationButton")
+        self.configButton = QtWidgets.QPushButton(Dialog)
+        self.configButton.setGeometry(QtCore.QRect(420, 290, 91, 23))
+        self.configButton.setObjectName("configButton")
 
         self.retranslateUi(Dialog)
         self.sourceLangBox.setCurrentIndex(-1)
@@ -162,7 +165,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Mr. Worldwide, by AnonymousHacker1279"))
-        self.sourceLangSelectLabel.setText(_translate("Dialog", "Input Language"))
+        self.sourceLangSelectLabel.setText(_translate("Dialog", "Source Language"))
         self.targetLangSelectLabel.setText(_translate("Dialog", "Target Language"))
         self.langFileEntryCounterLabel.setText(_translate("Dialog", "Language File Entries"))
         self.progressBarLabel.setText(_translate("Dialog", "Idle"))
@@ -191,3 +194,4 @@ class Ui_Dialog(object):
         self.selectedFileLabel.setText(_translate("Dialog", "Selected File"))
         self.logBox.setText(_translate("Dialog", "No log information available. "))
         self.targetLocationButton.setText(_translate("Dialog", "Target Location"))
+        self.configButton.setText(_translate("Dialog", "Configuration"))

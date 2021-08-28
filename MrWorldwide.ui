@@ -105,7 +105,7 @@
     <number>-1</number>
    </property>
    <property name="maxVisibleItems">
-    <number>5</number>
+    <number>10</number>
    </property>
   </widget>
   <widget class="QLabel" name="sourceLangSelectLabel">
@@ -118,7 +118,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Input Language</string>
+    <string>Source Language</string>
    </property>
   </widget>
   <widget class="QLabel" name="targetLangSelectLabel">
@@ -153,7 +153,7 @@
     <number>-1</number>
    </property>
    <property name="maxVisibleItems">
-    <number>5</number>
+    <number>10</number>
    </property>
   </widget>
   <widget class="QLabel" name="langFileEntryCounterLabel">
@@ -474,6 +474,19 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Target Location</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="configButton">
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>290</y>
+     <width>91</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Configuration</string>
    </property>
   </widget>
  </widget>
