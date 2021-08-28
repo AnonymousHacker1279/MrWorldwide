@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QFileDialog
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
-import sys, time, json, requests, traceback, configparser
+import sys, time, json, requests, traceback, configparser, os
 import MrWorldwideUI, ConfigurationUI
 
 class LangTypes:
@@ -82,9 +82,8 @@ class MrWorldwide(QWidget, MrWorldwideUI.Ui_Dialog, QtCore.QThread):
 
 	def run(self):
 		# Setup resources
-		QtCore.QDir.addSearchPath('images', 'gui_resources/')
-		logo = QtGui.QPixmap('images:MrWorldwide.png')
-		icon = QtGui.QIcon('images:MrWorldwide.png')
+		logo = QtGui.QPixmap(resource_path("gui_resources/MrWorldwide.png"))
+		icon = QtGui.QIcon(resource_path("gui_resources/MrWorldwide.png"))
 
 		# Set the logos and images
 		self.setWindowIcon(icon) # TODO: Custom icon
@@ -358,9 +357,8 @@ class ConfigurationDialog(QWidget, ConfigurationUI.Ui_Dialog):
 	
 	def run(self):
 		# Setup resources
-		QtCore.QDir.addSearchPath('images', 'gui_resources/')
-		logo = QtGui.QPixmap('images:Configuration.png')
-		icon = QtGui.QIcon('images:Configuration.png')
+		logo = QtGui.QPixmap(resource_path("gui_resources/Configuration.png"))
+		icon = QtGui.QIcon(resource_path("gui_resources/Configuration.png"))
 
 		# Set the logos and images
 		self.setWindowIcon(icon) # TODO: Custom icon
@@ -414,6 +412,11 @@ def main():
 	form = MrWorldwide()
 	form.show()
 	app.exec()
+
+def resource_path(relative_path):
+  if hasattr(sys, '_MEIPASS'):
+	  return os.path.join(sys._MEIPASS, relative_path)
+  return os.path.join(os.path.abspath('.'), relative_path)
 
 if __name__ == '__main__':
 	main()
