@@ -48,6 +48,9 @@ class Ui_Dialog(object):
         self.defaultTargetLangBox = QtWidgets.QComboBox(Dialog)
         self.defaultTargetLangBox.setGeometry(QtCore.QRect(330, 70, 69, 22))
         self.defaultTargetLangBox.setObjectName("defaultTargetLangBox")
+        self.updateButton = QtWidgets.QPushButton(Dialog)
+        self.updateButton.setGeometry(QtCore.QRect(190, 270, 121, 23))
+        self.updateButton.setObjectName("updateButton")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -61,3 +64,4 @@ class Ui_Dialog(object):
         self.apiMirrorLabel.setText(_translate("Dialog", "LibreTranslate Mirror"))
         self.defaultSourceLangLabel.setText(_translate("Dialog", "Default Source Language"))
         self.defaultTargetLangLabel.setText(_translate("Dialog", "Default Target Language"))
+        self.updateButton.setText(_translate("Dialog", "Update Manager"))

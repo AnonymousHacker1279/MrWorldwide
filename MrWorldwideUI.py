@@ -17,7 +17,7 @@ class Ui_Dialog(object):
         icon.addPixmap(QtGui.QPixmap(":/logo/MrWorldwide.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         Dialog.setWindowIcon(icon)
         self.logo = QtWidgets.QLabel(Dialog)
-        self.logo.setGeometry(QtCore.QRect(20, 20, 171, 281))
+        self.logo.setGeometry(QtCore.QRect(20, 20, 171, 291))
         self.logo.setCursor(QtGui.QCursor(QtCore.Qt.CursorShape.IBeamCursor))
         self.logo.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.logo.setText("")

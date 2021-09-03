@@ -1,5 +1,6 @@
 <RCC>
   <qresource lang="logo" prefix="logo">
+    <file>gui_resources/Updates.png</file>
     <file>gui_resources/Configuration.png</file>
     <file>gui_resources/MrWorldwide.png</file>
   </qresource>

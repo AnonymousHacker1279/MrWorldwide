@@ -140,6 +140,19 @@
     </rect>
    </property>
   </widget>
+  <widget class="QPushButton" name="updateButton">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>270</y>
+     <width>121</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Update Manager</string>
+   </property>
+  </widget>
  </widget>
  <resources>
   <include location="MrWorldwide.qrc"/>

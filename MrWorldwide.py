@@ -2,7 +2,9 @@ from PyQt6.QtWidgets import QApplication, QWidget, QFileDialog
 import PyQt6.QtCore as QtCore
 import PyQt6.QtGui as QtGui
 import sys, time, json, requests, traceback, configparser, os
-import MrWorldwideUI, ConfigurationUI
+import MrWorldwideUI, ConfigurationUI, UpdateManagerUI
+
+version = "v1.0.0"
 
 class LangTypes:
 	ENGLISH = "English"
@@ -379,6 +381,7 @@ class ConfigurationDialog(QWidget, ConfigurationUI.Ui_Dialog):
 		# Setup button actions
 		self.closeButton.clicked.connect(self.closeEvent)
 		self.applyButton.clicked.connect(self.applyEvent)
+		self.updateButton.clicked.connect(self.openUpdateManager)
 
 	# Setup variables
 	def setup(self, parent):
@@ -388,7 +391,14 @@ class ConfigurationDialog(QWidget, ConfigurationUI.Ui_Dialog):
 	def closeEvent(self, event):
 		self.close()
 
-	# Close event, for handling closing of the program
+	# Update event, for opening the update manager
+	# Open the configuration GUI
+	def openUpdateManager(self, event):
+		self.updateManagerDialog = UpdateManagerDialog()
+		self.updateManagerDialog.setup(self)
+		self.updateManagerDialog.show()
+
+	# Apply event, for handling applying of configurations
 	def applyEvent(self, event):
 		self.config = configparser.ConfigParser()
 		self.config['general'] = {}
@@ -404,6 +414,43 @@ class ConfigurationDialog(QWidget, ConfigurationUI.Ui_Dialog):
 		self.parent.refreshConfiguration()
 		self.close()
 
+class UpdateManagerDialog(QWidget, UpdateManagerUI.Ui_Dialog):
+	def __init__(self, parent=None):
+		super(UpdateManagerDialog, self).__init__(parent)
+		self.setupUi(self)
+		self.run()
+	
+	def run(self):
+		# Setup resources
+		logo = QtGui.QPixmap(resource_path("gui_resources/Updates.png"))
+		icon = QtGui.QIcon(resource_path("gui_resources/Updates.png"))
+
+		# Set the logos and images
+		self.setWindowIcon(icon) # TODO: Custom icon
+		self.logo.setPixmap(logo)
+
+		# Setup button actions
+		self.closeButton.clicked.connect(self.closeEvent)
+		self.checkUpdatesButton.clicked.connect(self.checkForUpdatesEvent)
+
+		global version
+		self.currentVersionBox.setText(version)
+
+	# Setup variables
+	def setup(self, parent):
+		self.parent = parent
+
+	# Close event, for handling closing of the program
+	def closeEvent(self, event):
+		self.close()
+
+	# Check for updates event
+	def checkForUpdatesEvent(self, event):
+		self.updateData = json.loads(requests.get("https://raw.githubusercontent.com/AnonymousHacker1279/MrWorldwide/master/update.json").text)
+		self.latestVersionBox.setText(self.updateData["latest"])
+		self.changelogBox.setText(self.updateData["changelog"] + "\n\nDownload the update here: " + self.updateData["link"])
+		
+
 def main():
 	global app
 	app = QApplication(sys.argv)
@@ -414,9 +461,9 @@ def main():
 	app.exec()
 
 def resource_path(relative_path):
-  if hasattr(sys, '_MEIPASS'):
-	  return os.path.join(sys._MEIPASS, relative_path)
-  return os.path.join(os.path.abspath('.'), relative_path)
+	if hasattr(sys, '_MEIPASS'):
+		return os.path.join(sys._MEIPASS, relative_path)
+	return os.path.join(os.path.abspath('.'), relative_path)
 
 if __name__ == '__main__':
 	main()
